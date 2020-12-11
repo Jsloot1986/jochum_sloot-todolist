@@ -45,7 +45,7 @@ async function deleteTaskFromList(id) {
 
 // collect the new tasks
 
-async function collectTasks(){
+async function makeNewTasks(){
     try{
         let text = await fetch(url);
         let result = await text.json();

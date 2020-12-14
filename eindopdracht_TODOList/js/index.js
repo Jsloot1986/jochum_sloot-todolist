@@ -52,6 +52,7 @@ function handleCheckedTask(e){
                     item.classList.remove("taskDone");                    
             }
         description = item.textContent;
+        
         }
         });
     putTaskToList(id, done, description).then(()=> getTasks());

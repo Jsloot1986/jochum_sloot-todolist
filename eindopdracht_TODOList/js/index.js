@@ -1,94 +1,111 @@
 //selectors
-let taskList = document.getElementById('list');
-let task = document.getElementById('newTask');
-let changeTask = false;
-let addTask = true;
+const todoList = document.getElementById('list');
+const todo = document.getElementById('newTodo');
+const childrenArr = (e) => Array.from(e.target.parentElement.children);
+
+let checkTodo = false;
+let putTodo = true;
 let done = false;
 
-const addButton = document.getElementById("add-task");
-addButton.addEventListener("click", handleSubmitText);
+const addButton = document.getElementById("add-todo");
+addButton.addEventListener("click", handleSubmitButton);
 
 //Event handlers
-function handleSubmitText(e){
-    if (changeTask === true){
-        description = newTask.value;
-        putTaskToList(id, done, description).then(()=>getTasks());
-        changeTask = false;
-        addButton.innerHTML = "Add Task";
+function handleSubmitButton(e){
+    if (checkTodo === true){
+        description = newTodo.value;
+        putTodoToList(id, done, description).then(()=>getTodos());
+        checkTodo = false;
+        addButton.innerHTML = "Add Todo";
     }else {
-        description = newTask.value;
-        let taskArr = Array.from(document.getElementsByClassName("task-item"));
-        addTask = true;
-        taskArr.forEach(element =>{
-            let childrenArr = Array.from(element.children);
+        description = newTodo.value;
+        const todoArr = Array.from(document.getElementsByClassName("todo-item"));
+        putTodo = true;
+        todoArr.forEach(element =>{
+            const childrenArr = Array.from(element.children);
             childrenArr.forEach(element =>{
                 if(element.classList.contains("todo-list-item") && 
                 (element.textContent.toUpperCase()=== description.toUpperCase())&&
-                 (description !== "")) addTask = false
+                 (description !== "")) putTodo = false
             })
         })
-        if (addTask === false){
-            alert ("Task is already in the To do list!");
+        if (putTodo === false){
+            alert ("Todo is already in the list!");
         } else{
             if (description === "")
-            alert("Please fill in your Task!");
-            else postTaskToList().then(() => getTasks());
+            alert("Please fill in your todo!");
+            else postTodoToList().then(() => getTodos());
         }
     }
         e.preventDefault();
-        newTask.value = "";
+        newTodo.value = "";
 }
 
-function handleCheckedTask(e){
-    let parentElement = e.target.parentElement;
-    let childrenArr = Array.from(parentElement.children);
-    childrenArr.forEach(item => {
+function handleCheckedTodo(e) {
+    childrenArr(e).forEach(item => {
         if (item.classList.contains("checkedbutton")) done = item.checked;
         if (item.classList.contains("id")) id = item.textContent;
-        if (item.classList.contains("todo-list-item")){
-            if(done === true) item.classList.add("taskDone")
-            else{
-                if (item.classList.contains("taskDone"))        
-                    item.classList.remove("taskDone");                    
+        if (item.classList.contains("todo-list-item")) {
+            if (done === true) item.classList.add("todoDone")
+            else {
+                if (item.classList.contains("todoDone"))
+                    item.classList.remove("todoDone");
             }
-        description = item.textContent;
+            description = item.textContent;
         
         }
-        });
-    putTaskToList(id, done, description).then(()=> getTasks());
-    e.preventDefault();    
-}
+    });
+    putTodoToList(id, done, description).then(() => getTodos());
+    e.preventDefault();
 
-function handleDeleteTask(e){
-    let parentElement = e.target.parentElement;
-    let childrenArr = Array.from(parentElement.children);
-    childrenArr.forEach(item => {
-        if (item.classList.contains("id")) id = item.textContent;});
-        
-    deleteTaskFromList(id).then(()=> getTasks());
-        e.preventDefault();
 }
+        
+    function handleDeleteTodo(e) {
+        childrenArr(e).forEach(item => {
+            if (item.classList.contains("id")) id = item.textContent;
+        });
+        
+        deleteTodoFromList(id).then(() => getTodos());
+        e.preventDefault();
+    }
+            
+    function handleChangeTodo(e){
+            checkTodo = true;
+            childrenArr(e).forEach(item => {
+                if (item.classList.contains("checkedbutton")) done = item.checked;
+                if (item.classList.contains("id")) id = item.textContent;
+                if (item.classList.contains("todo-list-item")) {
+                    if (done === true) {
+                        alert("This todo is already done and can't be changed!")
+                        checkTodo = false;
+                    } else {
+                        addButton.innerHTML = "Change todo";
+                        newTodo.value = item.textContent;
+                    }
+                }
+            }); e.preventDefault();    
+    }
 
 //Helpers
-const makeLi = (description, id, done)=>{
-    let li = document.createElement("li");
-    li.classList.add("task-item");
-    let pText = document.createElement("p");
+const makeTodo = (description, id, done)=>{
+    const li = document.createElement("li");
+    li.classList.add("todo-item");
+    const pText = document.createElement("p");
     pText.classList.add("todo-list-item")
     if (done === true) {
-        pText.classList.add("taskDone")
+        pText.classList.add("todoDone")
     }
     pText.innerHTML = description;
-    let checkedButton = document.createElement("input");
+    const checkedButton = document.createElement("input");
     checkedButton.setAttribute("type", "checkbox");
     checkedButton.setAttribute("name", "checkedbutton");
     checkedButton.checked = done;
     checkedButton.classList.add("checkedbutton");
-    let deleteButton = document.createElement("img");
+    const deleteButton = document.createElement("img");
     deleteButton.setAttribute("src", "./img/trash.png");
     deleteButton.setAttribute("alt", "deletebutton");
     deleteButton.classList.add("deletebutton");
-    let idP = document.createElement("p")
+    const idP = document.createElement("p")
     idP.innerHTML = id;
     idP.classList.add("id");
     checkedButton.onclick = done;
@@ -97,43 +114,24 @@ const makeLi = (description, id, done)=>{
     li.appendChild(checkedButton);
     li.appendChild(deleteButton);
     li.appendChild(idP);
-    taskList.appendChild(li);
+    todoList.appendChild(li);
 }
 
-const changeTasks = (e)=>{
-    changeTask = true;
-    let parentElement = e.target.parentElement;
-    let childrenArr = Array.from(parentElement.children);
-    childrenArr.forEach(item => {
-        if (item.classList.contains("checkedbutton")) done = item.checked;
-        if (item.classList.contains("id")) id= item.textContent;
-        if (item.classList.contains("todo-list-item")){
-            if (done === true) {
-                alert ("This task is already done and can't be changed!")
-                changeTask = false;
-            }else {
-                addButton.innerHTML = "Change task";
-                newTask.value = item.textContent;
-            }
-        }
-    });
-};
-
-const makeTasks =(result) =>{
-    taskList.innerHTML = "";
+const makeTodos =(result) =>{
+    todoList.innerHTML = "";
     result.forEach(item =>{
-        makeLi(item.description, item._id, item.done);
+        makeTodo(item.description, item._id, item.done);
     })
-    let descriptions = Array.from(document.getElementsByClassName("todo-list-item"));
-    let checkItemsArr = Array.from(document.getElementsByClassName("checkedbutton"));
-    let deleteButtonsArr = Array.from(document.getElementsByClassName("deletebutton"));
-    deleteButtonsArr.forEach(element => element.addEventListener("click", handleDeleteTask));
-    checkItemsArr.forEach(element => element.addEventListener("change", handleCheckedTask));
-    descriptions.forEach(element => element.addEventListener("click", changeTasks));
-    task.value ="";
+    const descriptions = Array.from(document.getElementsByClassName("todo-list-item"));
+    const checkItemsArr = Array.from(document.getElementsByClassName("checkedbutton"));
+    const deleteButtonsArr = Array.from(document.getElementsByClassName("deletebutton"));
+    deleteButtonsArr.forEach(element => element.addEventListener("click", handleDeleteTodo));
+    checkItemsArr.forEach(element => element.addEventListener("change", handleCheckedTodo));
+    descriptions.forEach(element => element.addEventListener("click", handleChangeTodo));
+    todo.value ="";
 }
-const getTasks =()=>{
-    makeNewTasks().then((result) => makeTasks(result))
+const getTodos =()=>{
+    fetchResult().then((result) => makeTodos(result))
 }
 
-getTasks();
+getTodos()
